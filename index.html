@@ -1039,7 +1039,7 @@ function renderHome(){const total=ORDER.length,doneN=ORDER.filter(id=>progress[i
   drawTerm();
   app.replaceChildren(h('div',{class:'stack'},masthead(),stCard,tabs,list,
     h('section',{class:'card foot'},h('h3',{},'كيف أنجز مشروع الدرس؟'),h('ol',{style:'margin:0;padding-inline-start:20px'},h('li',{},'اختر الدرس الذي شرحه المعلم.'),h('li',{},'نفّذ المهمة العملية، ثم أجب عن سؤالين قصيرين.'),h('li',{},'اكتب رسالتك القصيرة للمعلم.'),h('li',{},'اضغط «أرسل لمعلمي عبر واتساب» ثم اختر محادثة المعلم واضغط إرسال.')),
-      h('p',{style:'margin-top:8px'},'تعمل المنصة على الجوال والجهاز اللوحي والحاسب، ولا تحتاج إلى معمل حاسب.'))))}
+      h('p',{style:'margin-top:8px'},'تعمل المنصة على الجوال والجهاز اللوحي والحاسب، ولا تحتاج إلى معمل حاسب.')),teacherLogin()))}
 
 function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}const QZ=L.quiz.slice(0,2);const st={task:{score:0,done:false,detail:'لم يبدأ المهمة'},quiz:new Array(QZ.length).fill(null),qa:[],reflect:''};
   const locked=ASSIGNED.length>0;const sent=progress[L.id];
@@ -1103,10 +1103,14 @@ function renderSent(L,P){const locked=ASSIGNED.length>0;const d=new Date(P.at);
 const PARAMS=new URLSearchParams(location.search);
 const ASSIGNED=(PARAMS.get('lesson')||'').split(',').map(x=>x.trim()).filter(id=>LESSONS[id]);
 const REQUIRE_LINK=true; /* في نسخة الموقع: true = لا يفتح الطالب إلا الدرس المرسل له */
-const isTeacher=()=>PARAMS.has('teacher')||location.hash==='#teacher';
+const TEACHER_PIN='7392'; /* رمز دخول المعلم — غيّره إن شئت */
+const isTeacher=()=>PARAMS.has('teacher')||location.hash==='#teacher'||(()=>{try{return sessionStorage.getItem('rqm4:t')==='1'}catch(e){return false}})();
+function teacherLogin(){const pin=h('input',{type:'text',id:'t-pin',inputmode:'numeric',autocomplete:'off',placeholder:'الرمز',style:'max-width:140px;text-align:center;letter-spacing:.2em'});const m=h('p',{class:'msg'});const go=()=>{if(pin.value.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim()===TEACHER_PIN){try{sessionStorage.setItem('rqm4:t','1')}catch(e){}renderTeacher();window.scrollTo(0,0)}else{m.className='msg bad';m.textContent='الرمز غير صحيح.'}};pin.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+  const box=h('div',{class:'stack',style:'gap:8px'},h('div',{class:'row'},pin,h('button',{type:'button',class:'btn ghost',onclick:go},'دخول')),m);box.hidden=true;
+  return h('section',{class:'foot',style:'text-align:center'},h('button',{type:'button',class:'back',style:'background:none;border:0;margin-inline:auto',onclick:()=>{box.hidden=!box.hidden;if(!box.hidden)pin.focus()}},'دخول المعلم'),box)}
 const lessonRow=L=>{const p=progress[L.id];return h('a',{href:'#'+L.id,class:'lesson'+(p?' done':'')+(L.project?' proj':'')},h('span',{class:'dot','aria-hidden':'true'},p?'✓':'•'),h('span',{style:'min-width:0'},h('small',{},`${L.unitLabel} · ${L.label} · ${TYPE_TAG[L.task.type]}`),h('b',{},L.title)),p?h('span',{class:'score num'},`${ar(p.score)}/١٠`):h('span',{class:'tag'},'ابدأ'))};
 function renderAssigned(){app.replaceChildren(h('div',{class:'stack'},masthead(),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'الدروس المطلوبة منك'),h('p',{class:'muted',style:'font-size:14px'},'اختر الدرس، نفّذه، ثم أرسل إنجازك إلى المعلم.'),...ASSIGNED.map(id=>lessonRow(LESSONS[id])))))}
-function renderNeedLink(){app.replaceChildren(h('div',{class:'stack'},masthead(),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'افتح رابط الدرس'),h('p',{},'هذه المنصة تعمل برابط الدرس الذي يرسله لك المعلم. افتح الرابط من رسالة المعلم أو من مدرستي.'))))}
+function renderNeedLink(){app.replaceChildren(h('div',{class:'stack'},masthead(),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'افتح رابط الدرس'),h('p',{},'هذه المنصة تعمل برابط الدرس الذي يرسله لك المعلم. افتح الرابط من رسالة المعلم أو من مدرستي.')),teacherLogin()))}
 function renderTeacher(){const base=location.origin&&location.origin!=='null'&&!/^file/.test(location.protocol)?location.origin+location.pathname:'';const sel=new Set();
   const out=h('div',{class:'stack',style:'gap:8px'});
   const linkFor=ids=>(base||'(رابط موقعك)')+'?lesson='+ids.join(',');
