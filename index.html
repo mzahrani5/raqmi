@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="مشاريع منزلية تفاعلية لمادة المهارات الرقمية – الصف الرابع الابتدائي – مدرسة سلمة بن الأكوع الابتدائية">
 <title>المهارات الرقمية – رابع | مدرسة سلمة بن الأكوع</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
@@ -57,6 +56,7 @@ button{cursor:pointer}
   linear-gradient(var(--teal),var(--teal)) 0 24px/24px 24px no-repeat,
   linear-gradient(var(--accent),var(--accent)) 48px 48px/24px 24px no-repeat;opacity:.9}
 .eyebrow{font-size:13px;letter-spacing:.02em;color:var(--band-muted);font-weight:600}
+.teacher-band{background:linear-gradient(135deg,#0f5c52,#17806f)}.teacher-band .grade{color:#ffe39a}
 .band h1{font-size:clamp(30px,8vw,44px);font-weight:800;margin-top:2px}
 .band .grade{font-size:17px;font-weight:600;color:var(--sun)}
 .ids{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:16px;padding-inline-end:70px}
@@ -356,6 +356,8 @@ pre.preview{white-space:pre-wrap;background:var(--surface);border:1px solid var(
 .files{display:flex;flex-direction:column;gap:4px}.files button{text-align:start;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px 10px;direction:ltr}.files button[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .ai-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.ai-row span{flex:1 1 180px;min-width:0}
 .ai-row.ok{border-color:var(--ok);background:var(--ok-bg)}.ai-row.bad{border-color:var(--bad);background:var(--bad-bg)}
+.sent-banner{background:var(--ok-bg);color:var(--ok);border:1.5px solid var(--ok);border-radius:12px;padding:10px 14px;font-weight:700}
+.send.sent{border-color:var(--ok)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -1039,44 +1041,86 @@ function renderHome(){const total=ORDER.length,doneN=ORDER.filter(id=>progress[i
     h('section',{class:'card foot'},h('h3',{},'كيف أنجز مشروع الدرس؟'),h('ol',{style:'margin:0;padding-inline-start:20px'},h('li',{},'اختر الدرس الذي شرحه المعلم.'),h('li',{},'نفّذ المهمة العملية، ثم أجب عن سؤالين قصيرين.'),h('li',{},'اكتب رسالتك القصيرة للمعلم.'),h('li',{},'اضغط «أرسل لمعلمي عبر واتساب» ثم اختر محادثة المعلم واضغط إرسال.')),
       h('p',{style:'margin-top:8px'},'تعمل المنصة على الجوال والجهاز اللوحي والحاسب، ولا تحتاج إلى معمل حاسب.'))))}
 
-function renderLesson(L){const QZ=L.quiz.slice(0,2);const st={task:{score:0,done:false,detail:'لم يبدأ المهمة'},quiz:new Array(QZ.length).fill(null),qa:[],reflect:''};
+function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}const QZ=L.quiz.slice(0,2);const st={task:{score:0,done:false,detail:'لم يبدأ المهمة'},quiz:new Array(QZ.length).fill(null),qa:[],reflect:''};
+  const locked=ASSIGNED.length>0;const sent=progress[L.id];
   const sendBox=h('section',{class:'card send stack'});const report=r=>{st.task=r;refresh()};
   const taskEl=ENG[L.task.type](L.task,report);
   const ta=h('textarea',{id:'reflect-'+L.id,placeholder:'اكتب هنا…',oninput:e=>{st.reflect=e.target.value;refresh()}});
   const idx=ORDER.indexOf(L.id),next=ORDER[idx+1],prev=ORDER[idx-1];
+  const backLink=!locked?h('a',{href:'#home',class:'back'},'→ كل الدروس'):ASSIGNED.length>1?h('a',{href:'#home',class:'back'},'→ دروسي المطلوبة'):null;
   app.replaceChildren(h('div',{class:'stack'},
-    h('a',{href:'#home',class:'back'},'→ كل الدروس'),
+    backLink,
+    locked?masthead(true):null,
     h('div',{class:'l-head'},h('div',{class:'meta'},`${L.term.title} · ${L.unitLabel}: ${L.unit.title}`),h('h1',{},(L.project?'مشروع: ':'')+L.title),h('div',{class:'ctx'},`${INFO.subject} · ${INFO.grade} · المعلم ${INFO.teacher} · ${INFO.school}`)),
+    sent?h('div',{class:'sent-banner'},`أرسلت هذا الدرس بدرجة ${ar(sent.score)} من ١٠. يمكنك مراجعته، لكن لا يمكن إرساله مرة أخرى.`):null,
     h('div',{class:'idea'},h('b',{},'فكرة الدرس'),L.idea),
     h('section',{class:'card'},h('div',{class:'sec-t'},h('h2',{},'المهمة'),h('span',{class:'tag'},TYPE_TAG[L.task.type]+' · ٧ درجات')),h('p',{class:'intro'},L.task.intro),taskEl),
     h('section',{class:'card'},h('div',{class:'sec-t'},h('h2',{},'أسئلة سريعة'),h('span',{class:'tag'},'درجتان')),...quizEls(QZ,(i,ok,t)=>{st.quiz[i]=ok;st.qa[i]=t;refresh()})),
     h('section',{class:'card'},h('div',{class:'sec-t'},h('h2',{},'رسالتك للمعلم'),h('span',{class:'tag'},'درجة واحدة')),h('p',{class:'intro'},L.reflect),ta),
     sendBox,
-    h('div',{class:'row',style:'justify-content:space-between'},prev?h('a',{href:'#'+prev,class:'back'},'→ السابق: '+LESSONS[prev].title):h('span'),next?h('a',{href:'#'+next,class:'back'},'التالي: '+LESSONS[next].title+' ←'):h('span'))));
+    locked?null:h('div',{class:'row',style:'justify-content:space-between'},prev?h('a',{href:'#'+prev,class:'back'},'→ السابق: '+LESSONS[prev].title):h('span'),next?h('a',{href:'#'+next,class:'back'},'التالي: '+LESSONS[next].title+' ←'):h('span'))));
   function pts(){const t=Math.round(st.task.score*7),q=st.quiz.filter(x=>x===true).length,r=st.reflect.trim().length>=8?1:0;return{t,q,r,total:t+q+r}}
   function message(p){const d=new Date();const date=d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' — '+d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
     return[`📘 ${INFO.subject} — ${INFO.grade}`,`🏫 ${INFO.school}`,`👨‍🏫 المعلم: ${INFO.teacher}`,'━━━━━━━━━━',`الطالب: ${student.name}`,`الفصل: ${student.cls}`,`${L.unitLabel} · ${L.label}: ${L.title}`,'━━━━━━━━━━',
       `✅ المهمة (${TYPE_TAG[L.task.type]}): ${st.task.done?'مكتملة':'غير مكتملة'} — ${p.t}/7`,`   ${st.task.detail}`,`📝 الأسئلة: ${p.q} من ${QZ.length}`,`💬 رسالتي: ${st.reflect.trim()||'—'}`,`⭐ الدرجة: ${p.total} من 10`,
       L.attach?'🎙️ سأرسل ملف التسجيل الصوتي بعد هذه الرسالة.':null,`🕒 ${date}`].filter(Boolean).join('\n')}
-  function refresh(){const p=pts();const answered=st.quiz.every(x=>x!==null);const started=st.task.detail!=='لم يبدأ المهمة';
-    const missing=[];if(!started)missing.push('نفّذ المهمة');if(!answered)missing.push('أجب عن كل الأسئلة');if(st.reflect.trim().length<8)missing.push('اكتب رسالتك للمعلم');
+  /* خانات الاسم والفصل ثابتة لا تُمسح أثناء العمل */
+  const saveSt=()=>{store.set('student',student);refresh()};
+  const nm=h('input',{type:'text',id:'send-name',value:student.name,placeholder:'الاسم الثلاثي',autocomplete:'name',oninput:e=>{student.name=e.target.value.trim();saveSt()}});
+  const cl=h('input',{type:'text',id:'send-cls',value:student.cls,placeholder:'مثال: ٤/١',oninput:e=>{student.cls=e.target.value.trim();saveSt()}});
+  const headBox=h('div'),dyn=h('div',{class:'stack',style:'gap:10px'});
+  sendBox.append(headBox,h('div',{class:'row'},h('div',{class:'field'},h('label',{for:'send-name'},'اسم الطالب'),nm),h('div',{class:'field',style:'flex:0 1 140px'},h('label',{for:'send-cls'},'الفصل'),cl)),dyn);
+  function showSent(){const d=new Date(sent.at);const when=d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})+' — '+d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
+    sendBox.className='card send stack sent';
+    sendBox.replaceChildren(h('div',{class:'scorebox'},h('div',{class:'big num'},ar(sent.score),h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:4px;min-width:0'},h('h2',{style:'font-size:22px'},'تم إرسال هذا الدرس'),h('p',{class:'note'},when))),
+      h('p',{},'يُقبل إرسال واحد فقط لكل درس، ولا يمكن إرسال هذا الدرس مرة أخرى.'),
+      sent.link?h('p',{class:'note'},'إذا فتح النموذج ولم تضغط «إرسال» فيه، أعد فتحه بالإجابات نفسها:'):null,
+      sent.link?h('div',{class:'row'},h('a',{class:'btn ghost',href:sent.link,target:'_blank',rel:'noopener'},'أعد فتح النموذج بإجاباتي نفسها')):null)}
+  function refresh(){if(sent){showSent();return}const p=pts();const answered=st.quiz.every(x=>x!==null);const started=st.task.detail!=='لم يبدأ المهمة';
+    const missing=[];if(student.name.split(/\s+/).filter(Boolean).length<2)missing.push('اكتب اسمك الثنائي أو الثلاثي');if(!student.cls)missing.push('اكتب فصلك');if(!started)missing.push('نفّذ المهمة');if(!answered)missing.push('أجب عن السؤالين');if(st.reflect.trim().length<8)missing.push('اكتب رسالتك للمعلم');
     const parts=h('div',{class:'parts num'},h('span',{},`المهمة ${ar(p.t)}/٧`),h('span',{},`الأسئلة ${ar(p.q)}/٢`),h('span',{},`الرسالة ${ar(p.r)}/١`));
-    const head=h('div',{class:'scorebox'},h('div',{class:'big num'},`${ar(p.total)}`,h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:6px;min-width:0'},h('h2',{style:'font-size:22px'},'أرسل إنجازك'),parts));
-    if(!student.name){sendBox.replaceChildren(head,h('p',{},'اكتب اسمك وفصلك ليظهرا في الرسالة.'),studentForm(refresh));return}
+    headBox.replaceChildren(h('div',{class:'scorebox'},h('div',{class:'big num'},`${ar(p.total)}`,h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:6px;min-width:0'},h('h2',{style:'font-size:22px'},'أرسل إنجازك'),parts)));
     const msg=message(p);const ready=missing.length===0;
-    const mark=()=>{if(!ready)return;progress[L.id]={score:p.total,at:Date.now()};store.set('progress',progress)};
+    const mark=e=>{if(!ready){e.preventDefault();return}progress[L.id]={score:p.total,at:Date.now(),name:student.name,cls:student.cls,link:e.currentTarget.href};store.set('progress',progress);setTimeout(()=>{renderSent(L,progress[L.id]);window.scrollTo(0,0)},400)};
+    const status=ready?null:h('p',{class:'msg bad'},'يظهر زر الإرسال فعّالًا بعد أن: '+missing.join('، ')+'.');
     if(gformReady()){const link=gformLink({name:student.name,cls:student.cls,lesson:`${L.term.title} · ${L.unitLabel} · ${L.label}: ${L.title}`,score:`${p.total} من 10`,task:`${st.task.done?'مكتملة':'غير مكتملة'} (${p.t}/7) — ${st.task.detail}`,quiz:`${p.q} من ${QZ.length}`,reflect:st.reflect.trim()});
       const gf=h('a',{class:'btn wa',href:link,target:'_blank',rel:'noopener','aria-disabled':ready?'false':'true',onclick:mark},'أرسل إنجازي إلى المعلم');
-      sendBox.replaceChildren(head,ready?h('p',{class:'note'},'سيفتح نموذج المعلم وفيه إجاباتك جاهزة. اضغط زر «إرسال» في أسفل النموذج حتى تصل إلى المعلم.'):h('p',{class:'msg bad'},'قبل الإرسال: '+missing.join('، ')+'.'),
-        h('div',{class:'row'},gf),L.attach?h('p',{class:'note'},'أرسل ملف التسجيل الصوتي إلى المعلم بالطريقة التي يحددها لك.'):null,h('p',{class:'note'},`الطالب: ${student.name} · فصل ${student.cls}`));return}
-    const wa=h('a',{class:'btn wa',href:`https://wa.me/${TEACHER_WA}?text=${encodeURIComponent(msg)}`,target:'_blank',rel:'noopener','aria-disabled':ready?'false':'true',onclick:()=>{if(!ready)return;progress[L.id]={score:p.total,at:Date.now()};store.set('progress',progress)}},'أرسل لمعلمي عبر واتساب');
-    const pre=h('pre',{class:'preview'},msg);const cp=h('button',{type:'button',class:'btn ghost',onclick:async()=>{try{await navigator.clipboard.writeText(msg);cp.textContent='نُسخت الرسالة'}catch(e){const r=document.createRange();r.selectNodeContents(pre);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);cp.textContent='حدّد النص وانسخه يدويًا'}}},'انسخ الرسالة');
-    sendBox.replaceChildren(head,ready?h('p',{class:'note'},`سيفتح واتساب برسالة جاهزة. ${TEACHER_WA?'تأكد أنها في محادثة المعلم':'اختر محادثة المعلم'} ثم اضغط إرسال.`):h('p',{class:'msg bad'},'قبل الإرسال: '+missing.join('، ')+'.'),
-      h('div',{class:'row'},wa,cp),L.attach?h('p',{class:'note'},'بعد إرسال الرسالة، أرفق ملف التسجيل الصوتي في محادثة المعلم نفسها.'):null,h('details',{},h('summary',{class:'note',style:'cursor:pointer'},'معاينة الرسالة'),pre),
-      h('p',{class:'note'},`الطالب: ${student.name} · فصل ${student.cls}`))}
+      dyn.replaceChildren(status||h('p',{class:'note'},'سيفتح نموذج المعلم وفيه إجاباتك جاهزة. اضغط زر «إرسال» في أسفل النموذج حتى تصل إلى المعلم.'),h('div',{class:'row'},gf),L.attach?h('p',{class:'note'},'أرسل ملف التسجيل الصوتي إلى المعلم بالطريقة التي يحددها لك.'):null);return}
+    const wa=h('a',{class:'btn wa',href:`https://wa.me/${TEACHER_WA}?text=${encodeURIComponent(msg)}`,target:'_blank',rel:'noopener','aria-disabled':ready?'false':'true',onclick:mark},'أرسل لمعلمي عبر واتساب');
+    dyn.replaceChildren(status||h('p',{class:'note'},'سيفتح واتساب برسالة جاهزة. اختر محادثة المعلم ثم اضغط إرسال.'),h('div',{class:'row'},wa),L.attach?h('p',{class:'note'},'بعد إرسال الرسالة، أرفق ملف التسجيل الصوتي في محادثة المعلم نفسها.'):null)}
   refresh()}
 
-function route(){const id=location.hash.slice(1);if(LESSONS[id])renderLesson(LESSONS[id]);else renderHome();window.scrollTo(0,0)}
+
+/* بعد الإرسال يُقفل الدرس: استجابة واحدة لكل درس */
+function renderSent(L,P){const locked=ASSIGNED.length>0;const d=new Date(P.at);
+  const back=!locked?h('a',{href:'#home',class:'back'},'→ كل الدروس'):ASSIGNED.length>1?h('a',{href:'#home',class:'back'},'→ دروسي المطلوبة'):null;
+  app.replaceChildren(h('div',{class:'stack'},back,locked?masthead(true):null,
+    h('div',{class:'l-head'},h('div',{class:'meta'},`${L.term.title} · ${L.unitLabel}: ${L.unit.title}`),h('h1',{},(L.project?'مشروع: ':'')+L.title)),
+    h('section',{class:'card send stack'},h('div',{class:'scorebox'},h('div',{class:'big num'},ar(P.score),h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:4px;min-width:0'},h('h2',{style:'font-size:22px'},'✓ أرسلت إنجازك في هذا الدرس'),h('p',{class:'note'},`${P.name?P.name+' · فصل '+P.cls+' · ':''}${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`))),
+      h('p',{},'لكل درس استجابة واحدة فقط، ولا يمكن حلّه مرة أخرى.'),
+      P.link?h('details',{},h('summary',{class:'note',style:'cursor:pointer'},'فتحت النموذج ولم تضغط «إرسال»؟'),h('div',{class:'stack',style:'gap:8px;margin-top:8px'},h('p',{class:'note'},'افتح النموذج بإجاباتك نفسها واضغط «إرسال» مرة واحدة فقط.'),h('a',{class:'btn ghost',href:P.link,target:'_blank',rel:'noopener',style:'align-self:flex-start'},'افتح النموذج بإجاباتي'))):null)))}
+/* ====== وضع الدرس المحدد وصفحة المعلم ====== */
+const PARAMS=new URLSearchParams(location.search);
+const ASSIGNED=(PARAMS.get('lesson')||'').split(',').map(x=>x.trim()).filter(id=>LESSONS[id]);
+const REQUIRE_LINK=true; /* في نسخة الموقع: true = لا يفتح الطالب إلا الدرس المرسل له */
+const isTeacher=()=>PARAMS.has('teacher')||location.hash==='#teacher';
+const lessonRow=L=>{const p=progress[L.id];return h('a',{href:'#'+L.id,class:'lesson'+(p?' done':'')+(L.project?' proj':'')},h('span',{class:'dot','aria-hidden':'true'},p?'✓':'•'),h('span',{style:'min-width:0'},h('small',{},`${L.unitLabel} · ${L.label} · ${TYPE_TAG[L.task.type]}`),h('b',{},L.title)),p?h('span',{class:'score num'},`${ar(p.score)}/١٠`):h('span',{class:'tag'},'ابدأ'))};
+function renderAssigned(){app.replaceChildren(h('div',{class:'stack'},masthead(),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'الدروس المطلوبة منك'),h('p',{class:'muted',style:'font-size:14px'},'اختر الدرس، نفّذه، ثم أرسل إنجازك إلى المعلم.'),...ASSIGNED.map(id=>lessonRow(LESSONS[id])))))}
+function renderNeedLink(){app.replaceChildren(h('div',{class:'stack'},masthead(),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'افتح رابط الدرس'),h('p',{},'هذه المنصة تعمل برابط الدرس الذي يرسله لك المعلم. افتح الرابط من رسالة المعلم أو من مدرستي.'))))}
+function renderTeacher(){const base=location.origin&&location.origin!=='null'&&!/^file/.test(location.protocol)?location.origin+location.pathname:'';const sel=new Set();
+  const out=h('div',{class:'stack',style:'gap:8px'});
+  const linkFor=ids=>(base||'(رابط موقعك)')+'?lesson='+ids.join(',');
+  async function copy(t,btn){try{await navigator.clipboard.writeText(t);btn.textContent='نُسخ'}catch(e){btn.textContent='انسخه يدويًا'}setTimeout(()=>btn.textContent='انسخ',1500)}
+  function drawOut(){const ids=ORDER.filter(id=>sel.has(id));if(!ids.length){out.replaceChildren(h('p',{class:'note'},'حدّد درسًا أو أكثر من القائمة ليظهر رابطه هنا.'));return}const l=linkFor(ids);const b=h('button',{type:'button',class:'btn',onclick:()=>copy(l,b)},'انسخ');
+    out.replaceChildren(h('b',{},ids.length===1?'رابط الدرس المحدد:':`رابط ${ar(ids.length)} دروس محددة:`),h('pre',{class:'preview',dir:'ltr'},l),h('div',{class:'row'},b,base?h('a',{class:'btn ghost',href:l,target:'_blank',rel:'noopener'},'جرّب الرابط'):null))}
+  const list=h('div',{class:'stack',style:'gap:14px'},TERMS.map(T=>h('div',{class:'stack',style:'gap:6px'},h('h3',{style:'font-size:18px'},T.title),T.units.map(U=>h('div',{class:'stack',style:'gap:4px'},h('div',{class:'unit-n'},U.title),U.lessons.map(L=>h('label',{class:'toggle'},h('input',{type:'checkbox',id:'pick-'+L.id,onchange:e=>{e.target.checked?sel.add(L.id):sel.delete(L.id);drawOut()}}),h('span',{},`${L.label}: ${L.title}`))))))));
+  drawOut();
+  app.replaceChildren(h('div',{class:'stack'},h('header',{class:'band teacher-band'},h('div',{class:'eyebrow'},'خاص بالمعلم — لا تشارك هذه الصفحة مع الطلاب'),h('h1',{},'صفحة المعلم'),h('div',{class:'grade'},'إنشاء روابط الدروس للطلاب'),h('div',{class:'ids'},h('div',{class:'id'},h('small',{},'المعلم'),h('b',{},INFO.teacher)),h('div',{class:'id'},h('small',{},'المادة'),h('b',{},INFO.subject+' — '+INFO.grade)))),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'١. حدّد الدرس ثم انسخ رابطه'),
+    h('p',{},'حدّد الدرس الذي تريد أن يحلّه الطلاب، ثم انسخ الرابط وأرسله لهم أو لأولياء الأمور. الطالب الذي يفتح الرابط يرى هذا الدرس فقط.'),
+    base?null:h('p',{class:'msg bad'},'الروابط تعمل من موقعك المنشور (مثل GitHub Pages). افتح هذه الصفحة من موقعك ليظهر الرابط كاملًا.'),
+    h('div',{class:'send card'},out)),h('section',{class:'card'},list)))}
+
+function route(){const id=location.hash.slice(1);if(isTeacher())renderTeacher();else if(ASSIGNED.length){if(ASSIGNED.length===1)renderLesson(LESSONS[ASSIGNED[0]]);else if(ASSIGNED.includes(id))renderLesson(LESSONS[id]);else renderAssigned()}else if(REQUIRE_LINK)renderNeedLink();else if(LESSONS[id])renderLesson(LESSONS[id]);else renderHome();window.scrollTo(0,0)}
 addEventListener('hashchange',route);route();
 </script>
 
