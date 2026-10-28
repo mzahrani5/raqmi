@@ -358,6 +358,11 @@ pre.preview{white-space:pre-wrap;background:var(--surface);border:1px solid var(
 .ai-row.ok{border-color:var(--ok);background:var(--ok-bg)}.ai-row.bad{border-color:var(--bad);background:var(--bad-bg)}
 .sent-banner{background:var(--ok-bg);color:var(--ok);border:1.5px solid var(--ok);border-radius:12px;padding:10px 14px;font-weight:700}
 .send.sent{border-color:var(--ok)}
+.rep{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.rep-top{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}.rep-top small{color:var(--muted)}
+.rep-s{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}.rep-h{font-family:var(--f-display);font-size:16px}
+.rep-d{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}.rep-q{display:flex;flex-direction:column;gap:2px;font-size:14.5px}
+.rep-q .ok,.rep .pill.ok{color:var(--ok)}.rep-q .bad{color:var(--bad)}.rep .pill{font-weight:700;font-size:13px;border-radius:99px;padding:2px 10px;background:var(--surface-2);border:1px solid var(--line)}.rep .pill.no{color:var(--bad)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -370,9 +375,15 @@ pre.preview{white-space:pre-wrap;background:var(--surface);border:1px solid var(
 document.documentElement.lang='ar';document.documentElement.dir='rtl';
 /* ====== بيانات المادة ====== */
 const INFO={subject:'المهارات الرقمية',grade:'الصف الرابع الابتدائي',teacher:'ماجد أحمد الزهراني',school:'مدرسة سلمة بن الأكوع الابتدائية'};
+/* فصول الصف الرابع في المدرسة — عدّلها حسب عدد الفصول */
+let CLASSES=['رابع ١','رابع ٢','رابع ٣']; /* تُحدَّث تلقائيًا من ورقة «الفصول» في جدول المعلم */
+let CLASSES_LOADING=true;
+function clsSelect(id,onChange){const v=CLASSES.includes(student.cls)?student.cls:(student.cls&&CLASSES_LOADING?student.cls:'');const sel=h('select',{id,onchange:e=>{if(onChange)onChange(e.target.value)}},h('option',{value:'',disabled:true,selected:!v},'اختر فصلك'),CLASSES.map(c=>h('option',{value:c,selected:c===v},c)));if(!v&&student.cls)student.cls='';return sel}
 const TEACHER_WA=''; // ضع رقم واتساب المعلم بالصيغة الدولية مثل 9665XXXXXXXX ليصل الإرسال إليه مباشرة
 /* نموذج المعلم (Microsoft Forms أو Google Forms): الصق رابط «الرابط المعبأ مسبقًا» ومعرّفات الحقول
    Microsoft: المعرّفات تبدأ بحرف r مثل r1a2b3c4  ·  Google: تبدأ بـ entry. مثل entry.123456 */
+/* جدول Google (Apps Script): ضع هنا رابط تطبيق الويب. إذا وُضع، يُرسَل الإنجاز مباشرة إلى الجدول */
+const SHEET_URL='https://script.google.com/macros/s/AKfycbzMs5v5Wfjl0ZP_Lzj6vWqgagUVb9TQNcEllxHiYi34IDXEFRDx9lvz5_vEZpN155KiEQ/exec';
 const GFORM={url:'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=fzu0XJrLzUiQCBUY6oBA4BArfBXreBtAvuVl41z6yUhUMFNPVExWWFBONjdOVjJOUFVMR1dXT0FTNi4u',fields:{name:'r24812a52640a47fd98248d6f90099a7f',cls:'rf40c990905c64294ad1ba899be922524',lesson:'r43576d474a0743788dac489215971b76',score:'rf4e08bb31ad14a1d959fd6b78ee407f8',task:'r034b86d1678d40bb9c78da60b281fafe',quiz:'r74f0d5e392764480b73d216725986d9f',reflect:'r2a595deb8f844d3da26a4814b2d35015'}};
 const gformReady=()=>!!GFORM.url&&Object.values(GFORM.fields).every(Boolean);
 function gformLink(v){const u=new URL(GFORM.url);for(const k in GFORM.fields)u.searchParams.delete(GFORM.fields[k]);if(/google\./.test(u.hostname))u.searchParams.set('usp','pp_url');for(const k in GFORM.fields)u.searchParams.set(GFORM.fields[k],v[k]);u.search=u.search.replace(/\+/g,'%20');return u.toString()}
@@ -1021,7 +1032,7 @@ const app=$('#app');
 function masthead(compact){return h('header',{class:'band'},h('div',{class:'eyebrow'},'منصة مشاريع المنزل'),h('h1',{},INFO.subject),h('div',{class:'grade'},INFO.grade),
   compact?null:h('div',{class:'ids'},h('div',{class:'id'},h('small',{},'المعلم'),h('b',{},INFO.teacher)),h('div',{class:'id'},h('small',{},'المدرسة'),h('b',{},INFO.school))))}
 
-function studentForm(onSave){const n=h('input',{type:'text',id:'st-name',value:student.name,placeholder:'الاسم الثلاثي',autocomplete:'name'});const c=h('input',{type:'text',id:'st-cls',value:student.cls,placeholder:'مثال: ٤/١'});const m=h('p',{class:'msg'});
+function studentForm(onSave){const n=h('input',{type:'text',id:'st-name',value:student.name,placeholder:'الاسم الثلاثي',autocomplete:'name'});const c=clsSelect('st-cls');const m=h('p',{class:'msg'});
   return h('form',{class:'stack',style:'gap:10px',onsubmit:e=>{e.preventDefault();if(n.value.trim().split(/\s+/).length<2){m.className='msg bad';m.textContent='اكتب اسمك الثنائي أو الثلاثي.';return}if(!c.value.trim()){m.className='msg bad';m.textContent='اكتب فصلك.';return}student={name:n.value.trim(),cls:c.value.trim()};store.set('student',student);onSave()}},
    h('div',{class:'row'},h('div',{class:'field'},h('label',{for:'st-name'},'اسم الطالب'),n),h('div',{class:'field',style:'flex:0 1 140px'},h('label',{for:'st-cls'},'الفصل'),c)),m,h('button',{class:'btn',type:'submit',style:'align-self:flex-start'},'احفظ بياناتي'))}
 
@@ -1059,6 +1070,7 @@ function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}
     h('section',{class:'card'},h('div',{class:'sec-t'},h('h2',{},'رسالتك للمعلم'),h('span',{class:'tag'},'درجة واحدة')),h('p',{class:'intro'},L.reflect),ta),
     sendBox,
     locked?null:h('div',{class:'row',style:'justify-content:space-between'},prev?h('a',{href:'#'+prev,class:'back'},'→ السابق: '+LESSONS[prev].title):h('span'),next?h('a',{href:'#'+next,class:'back'},'التالي: '+LESSONS[next].title+' ←'):h('span'))));
+  function buildRep(p){return{title:`${L.unitLabel} · ${L.label}: ${L.title}`,term:L.term.title,name:student.name,cls:student.cls,at:Date.now(),t:p.t,q:p.q,r:p.r,total:p.total,type:TYPE_TAG[L.task.type],done:st.task.done,detail:st.task.detail,qa:QZ.map((x,i)=>({q:x[0],a:st.qa[i]||'—',ok:!!st.quiz[i],c:x[1]})),reflect:st.reflect.trim()}}
   function pts(){const t=Math.round(st.task.score*7),q=st.quiz.filter(x=>x===true).length,r=st.reflect.trim().length>=8?1:0;return{t,q,r,total:t+q+r}}
   function message(p){const d=new Date();const date=d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' — '+d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
     return[`📘 ${INFO.subject} — ${INFO.grade}`,`🏫 ${INFO.school}`,`👨‍🏫 المعلم: ${INFO.teacher}`,'━━━━━━━━━━',`الطالب: ${student.name}`,`الفصل: ${student.cls}`,`${L.unitLabel} · ${L.label}: ${L.title}`,'━━━━━━━━━━',
@@ -1067,7 +1079,7 @@ function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}
   /* خانات الاسم والفصل ثابتة لا تُمسح أثناء العمل */
   const saveSt=()=>{store.set('student',student);refresh()};
   const nm=h('input',{type:'text',id:'send-name',value:student.name,placeholder:'الاسم الثلاثي',autocomplete:'name',oninput:e=>{student.name=e.target.value.trim();saveSt()}});
-  const cl=h('input',{type:'text',id:'send-cls',value:student.cls,placeholder:'مثال: ٤/١',oninput:e=>{student.cls=e.target.value.trim();saveSt()}});
+  const cl=clsSelect('send-cls',v=>{student.cls=v;saveSt()});
   const headBox=h('div'),dyn=h('div',{class:'stack',style:'gap:10px'});
   sendBox.append(headBox,h('div',{class:'row'},h('div',{class:'field'},h('label',{for:'send-name'},'اسم الطالب'),nm),h('div',{class:'field',style:'flex:0 1 140px'},h('label',{for:'send-cls'},'الفصل'),cl)),dyn);
   function showSent(){const d=new Date(sent.at);const when=d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})+' — '+d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
@@ -1081,9 +1093,16 @@ function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}
     const parts=h('div',{class:'parts num'},h('span',{},`المهمة ${ar(p.t)}/٧`),h('span',{},`الأسئلة ${ar(p.q)}/٢`),h('span',{},`الرسالة ${ar(p.r)}/١`));
     headBox.replaceChildren(h('div',{class:'scorebox'},h('div',{class:'big num'},`${ar(p.total)}`,h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:6px;min-width:0'},h('h2',{style:'font-size:22px'},'أرسل إنجازك'),parts)));
     const msg=message(p);const ready=missing.length===0;
-    const mark=e=>{if(!ready){e.preventDefault();return}progress[L.id]={score:p.total,at:Date.now(),name:student.name,cls:student.cls,link:e.currentTarget.href};store.set('progress',progress);setTimeout(()=>{renderSent(L,progress[L.id]);window.scrollTo(0,0)},400)};
+    const mark=e=>{if(!ready){e.preventDefault();return}progress[L.id]={score:p.total,at:Date.now(),name:student.name,cls:student.cls,link:e.currentTarget.href,rep:buildRep(p)};store.set('progress',progress);setTimeout(()=>{renderSent(L,progress[L.id]);window.scrollTo(0,0)},400)};
     const status=ready?null:h('p',{class:'msg bad'},'يظهر زر الإرسال فعّالًا بعد أن: '+missing.join('، ')+'.');
-    if(gformReady()){const link=gformLink({name:student.name,cls:student.cls,lesson:`${L.term.title} · ${L.unitLabel} · ${L.label}: ${L.title}`,score:`${p.total} من 10`,task:`${st.task.done?'مكتملة':'غير مكتملة'} (${p.t}/7) — ${st.task.detail}`,quiz:`${p.q} من ${QZ.length}`,reflect:st.reflect.trim()});
+    if(SHEET_URL){const sb=h('button',{type:'button',class:'btn wa','aria-disabled':ready?'false':'true',onclick:async()=>{if(!ready||sb.dataset.busy)return;sb.dataset.busy='1';sb.textContent='جارٍ الإرسال…';
+        const R=buildRep(p);const payload={answers:qaText(R),report:repText(R),name:student.name,cls:student.cls,lessonId:L.id,lesson:`${L.term.title} · ${L.unitLabel} · ${L.label}: ${L.title}`,score:p.total,task:`${st.task.done?'مكتملة':'غير مكتملة'} (${p.t}/7) — ${st.task.detail}`,quiz:`${p.q} من ${QZ.length}`,reflect:st.reflect.trim()};
+        try{const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();
+          if(j.status==='saved'||j.status==='duplicate'){progress[L.id]={score:j.status==='duplicate'&&j.score!=null?j.score:p.total,at:Date.now(),name:student.name,cls:student.cls,via:'sheet',dup:j.status==='duplicate',rep:j.status==='duplicate'?null:R};store.set('progress',progress);renderSent(L,progress[L.id]);window.scrollTo(0,0);return}
+          throw new Error(j.message||'error')}catch(e){delete sb.dataset.busy;sb.textContent='أرسل إنجازي إلى المعلم';sendErr.textContent='تعذّر الإرسال. تأكد من اتصالك بالإنترنت ثم اضغط الزر مرة أخرى.'}}},'أرسل إنجازي إلى المعلم');
+      const sendErr=h('p',{class:'msg bad'});
+      dyn.replaceChildren(status||h('p',{class:'note'},'اضغط الزر مرة واحدة، وانتظر رسالة التأكيد.'),h('div',{class:'row'},sb),sendErr,L.attach?h('p',{class:'note'},'أرسل ملف التسجيل الصوتي إلى المعلم بالطريقة التي يحددها لك.'):null);return}
+    if(gformReady()){const link=gformLink({name:student.name,cls:student.cls,lesson:`${L.term.title} · ${L.unitLabel} · ${L.label}: ${L.title}`,score:`${p.total} من 10`,task:`${st.task.done?'مكتملة':'غير مكتملة'} (${p.t}/7) — ${st.task.detail}`,quiz:`${p.q} من ${QZ.length} — `+qaText(buildRep(p)).replace(/\n/g,' | '),reflect:st.reflect.trim()});
       const gf=h('a',{class:'btn wa',href:link,target:'_blank',rel:'noopener','aria-disabled':ready?'false':'true',onclick:mark},'أرسل إنجازي إلى المعلم');
       dyn.replaceChildren(status||h('p',{class:'note'},'سيفتح نموذج المعلم وفيه إجاباتك جاهزة. اضغط زر «إرسال» في أسفل النموذج حتى تصل إلى المعلم.'),h('div',{class:'row'},gf),L.attach?h('p',{class:'note'},'أرسل ملف التسجيل الصوتي إلى المعلم بالطريقة التي يحددها لك.'):null);return}
     const wa=h('a',{class:'btn wa',href:`https://wa.me/${TEACHER_WA}?text=${encodeURIComponent(msg)}`,target:'_blank',rel:'noopener','aria-disabled':ready?'false':'true',onclick:mark},'أرسل لمعلمي عبر واتساب');
@@ -1091,13 +1110,26 @@ function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}
   refresh()}
 
 
+/* تقرير الإنجاز الكامل: مرجع للطالب وولي الأمر والمعلم */
+function qaText(R){return R.qa.map((x,i)=>`س${i+1}: ${x.q} — إجابة الطالب: ${x.a} ${x.ok?'✓ صحيحة':'✗ خاطئة (الصحيحة: '+x.c+')'}`).join('\n')}
+function repText(R){const d=new Date(R.at);return[`تقرير إنجاز — ${INFO.subject} — ${INFO.grade}`,`${INFO.school} · المعلم: ${INFO.teacher}`,'',`الطالب: ${R.name} — الفصل: ${R.cls}`,`${R.term} · ${R.title}`,`التاريخ: ${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`,'',
+  `الدرجة: ${R.total} من 10  (المهمة ${R.t}/7 · الأسئلة ${R.q}/2 · الرسالة ${R.r}/1)`,'',`المهمة العملية (${R.type}): ${R.done?'مكتملة':'غير مكتملة'}`,`ما أنجزه الطالب: ${R.detail}`,'','الأسئلة:',qaText(R),'',`رسالة الطالب: ${R.reflect||'—'}`].join('\n')}
+function repView(R){const box=h('div',{class:'rep'});
+  const sec=(t,...k)=>h('div',{class:'rep-s'},h('b',{class:'rep-h'},t),...k);
+  box.append(h('div',{class:'rep-top'},h('div',{},h('b',{},R.name),h('small',{},` · فصل ${R.cls}`)),h('div',{class:'parts num'},h('span',{},`المهمة ${ar(R.t)}/٧`),h('span',{},`الأسئلة ${ar(R.q)}/٢`),h('span',{},`الرسالة ${ar(R.r)}/١`))),
+    sec(`المهمة العملية · ${R.type}`,h('p',{},h('span',{class:'pill '+(R.done?'ok':'no')},R.done?'مكتملة':'غير مكتملة')),h('p',{class:'rep-d'},R.detail)),
+    sec('الأسئلة',...R.qa.map((x,i)=>h('div',{class:'rep-q'},h('p',{},`${ar(i+1)}. ${x.q}`),h('p',{class:x.ok?'ok':'bad'},`إجابة الطالب: ${x.a} ${x.ok?'✓':'✗'}`),x.ok?null:h('p',{class:'ok'},`الإجابة الصحيحة: ${x.c}`)))),
+    sec('رسالة الطالب للمعلم',h('p',{class:'rep-d'},R.reflect||'—')));
+  return box}
 /* بعد الإرسال يُقفل الدرس: استجابة واحدة لكل درس */
 function renderSent(L,P){const locked=ASSIGNED.length>0;const d=new Date(P.at);
   const back=!locked?h('a',{href:'#home',class:'back'},'→ كل الدروس'):ASSIGNED.length>1?h('a',{href:'#home',class:'back'},'→ دروسي المطلوبة'):null;
   app.replaceChildren(h('div',{class:'stack'},back,locked?masthead(true):null,
     h('div',{class:'l-head'},h('div',{class:'meta'},`${L.term.title} · ${L.unitLabel}: ${L.unit.title}`),h('h1',{},(L.project?'مشروع: ':'')+L.title)),
-    h('section',{class:'card send stack'},h('div',{class:'scorebox'},h('div',{class:'big num'},ar(P.score),h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:4px;min-width:0'},h('h2',{style:'font-size:22px'},'✓ أرسلت إنجازك في هذا الدرس'),h('p',{class:'note'},`${P.name?P.name+' · فصل '+P.cls+' · ':''}${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`))),
+    h('section',{class:'card send stack'},h('div',{class:'scorebox'},h('div',{class:'big num'},ar(P.score),h('span',{style:'font-size:20px;color:var(--muted)'},' / ١٠')),h('div',{class:'stack',style:'gap:4px;min-width:0'},h('h2',{style:'font-size:22px'},P.via==='sheet'?(P.dup?'✓ سبق أن أرسلت هذا الدرس':'✓ وصل إنجازك إلى المعلم'):'✓ أرسلت إنجازك في هذا الدرس'),h('p',{class:'note'},`${P.name?P.name+' · فصل '+P.cls+' · ':''}${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`))),
       h('p',{},'لكل درس استجابة واحدة فقط، ولا يمكن حلّه مرة أخرى.'),
+      P.rep?h('div',{class:'stack',style:'gap:10px'},h('h3',{style:'font-size:19px'},'تقرير إنجازك'),repView(P.rep),(()=>{const txt=repText(P.rep);const cb=h('button',{type:'button',class:'btn ghost',onclick:async()=>{try{await navigator.clipboard.writeText(txt);cb.textContent='نُسخ التقرير'}catch(e){cb.textContent='تعذّر النسخ'}}},'انسخ التقرير');
+        return h('div',{class:'row'},h('a',{class:'btn wa',href:'https://wa.me/?text='+encodeURIComponent(txt),target:'_blank',rel:'noopener'},'أرسل التقرير لولي الأمر'),cb)})()):null,
       P.link?h('details',{},h('summary',{class:'note',style:'cursor:pointer'},'فتحت النموذج ولم تضغط «إرسال»؟'),h('div',{class:'stack',style:'gap:8px;margin-top:8px'},h('p',{class:'note'},'افتح النموذج بإجاباتك نفسها واضغط «إرسال» مرة واحدة فقط.'),h('a',{class:'btn ghost',href:P.link,target:'_blank',rel:'noopener',style:'align-self:flex-start'},'افتح النموذج بإجاباتي'))):null)))}
 /* ====== وضع الدرس المحدد وصفحة المعلم ====== */
 const PARAMS=new URLSearchParams(location.search);
@@ -1126,6 +1158,9 @@ function renderTeacher(){const base=location.origin&&location.origin!=='null'&&!
 
 function route(){const id=location.hash.slice(1);if(isTeacher())renderTeacher();else if(ASSIGNED.length){if(ASSIGNED.length===1)renderLesson(LESSONS[ASSIGNED[0]]);else if(ASSIGNED.includes(id))renderLesson(LESSONS[id]);else renderAssigned()}else if(REQUIRE_LINK)renderNeedLink();else if(LESSONS[id])renderLesson(LESSONS[id]);else renderHome();window.scrollTo(0,0)}
 addEventListener('hashchange',route);route();
+/* جلب قائمة الفصول من جدول المعلم ثم تحديث القوائم المفتوحة دون مسح ما كتبه الطالب */
+(async()=>{if(!SHEET_URL){CLASSES_LOADING=false;return}try{const r=await fetch(SHEET_URL+'?action=classes');const j=await r.json();if(j&&Array.isArray(j.classes)&&j.classes.length){CLASSES=j.classes.map(String);
+  document.querySelectorAll('#st-cls,#send-cls').forEach(sel=>{const cur=sel.value||student.cls;sel.replaceChildren(h('option',{value:'',disabled:true,selected:!CLASSES.includes(cur)},'اختر فصلك'),...CLASSES.map(c=>h('option',{value:c,selected:c===cur},c)))})}}catch(e){}finally{CLASSES_LOADING=false}})();
 </script>
 
 </body>
