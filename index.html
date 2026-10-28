@@ -1135,7 +1135,7 @@ function renderSent(L,P){const locked=ASSIGNED.length>0;const d=new Date(P.at);
 const PARAMS=new URLSearchParams(location.search);
 const ASSIGNED=(PARAMS.get('lesson')||'').split(',').map(x=>x.trim()).filter(id=>LESSONS[id]);
 const REQUIRE_LINK=true; /* في نسخة الموقع: true = لا يفتح الطالب إلا الدرس المرسل له */
-const TEACHER_PIN='7392'; /* رمز دخول المعلم — غيّره إن شئت */
+const TEACHER_PIN='0880'; /* رمز دخول المعلم — غيّره إن شئت */
 const isTeacher=()=>PARAMS.has('teacher')||location.hash==='#teacher'||(()=>{try{return sessionStorage.getItem('rqm4:t')==='1'}catch(e){return false}})();
 function teacherLogin(){const pin=h('input',{type:'text',id:'t-pin',inputmode:'numeric',autocomplete:'off',placeholder:'الرمز',style:'max-width:140px;text-align:center;letter-spacing:.2em'});const m=h('p',{class:'msg'});const go=()=>{if(pin.value.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim()===TEACHER_PIN){try{sessionStorage.setItem('rqm4:t','1')}catch(e){}renderTeacher();window.scrollTo(0,0)}else{m.className='msg bad';m.textContent='الرمز غير صحيح.'}};pin.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   const box=h('div',{class:'stack',style:'gap:8px'},h('div',{class:'row'},pin,h('button',{type:'button',class:'btn ghost',onclick:go},'دخول')),m);box.hidden=true;
