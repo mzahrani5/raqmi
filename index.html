@@ -521,7 +521,7 @@ const TEACHER_WA=''; // ضع رقم واتساب المعلم بالصيغة ا�
 /* نموذج المعلم (Microsoft Forms أو Google Forms): الصق رابط «الرابط المعبأ مسبقًا» ومعرّفات الحقول
    Microsoft: المعرّفات تبدأ بحرف r مثل r1a2b3c4  ·  Google: تبدأ بـ entry. مثل entry.123456 */
 /* جدول Google (Apps Script): ضع هنا رابط تطبيق الويب. إذا وُضع، يُرسَل الإنجاز مباشرة إلى الجدول */
-const SHEET_URL='https://script.google.com/macros/s/AKfycbzK8_r7UT-yIyzoWiXTTG-_ZXNwWVp-lV082nvMQfyTFk1Cc5A8fC-S07m6KxTJJ1sYGQ/exec';
+const SHEET_URL='https://script.google.com/macros/s/AKfycbwYD8X8v-Y0SwcVPAi4j_paxV9BNukDY_JsdzI0AoU_zqdz5Hn-idz-1wHiHayqb8jZJA/exec';
 const GFORM={url:'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=fzu0XJrLzUiQCBUY6oBA4BArfBXreBtAvuVl41z6yUhUMFNPVExWWFBONjdOVjJOUFVMR1dXT0FTNi4u',fields:{name:'r24812a52640a47fd98248d6f90099a7f',cls:'rf40c990905c64294ad1ba899be922524',lesson:'r43576d474a0743788dac489215971b76',score:'rf4e08bb31ad14a1d959fd6b78ee407f8',task:'r034b86d1678d40bb9c78da60b281fafe',quiz:'r74f0d5e392764480b73d216725986d9f',reflect:'r2a595deb8f844d3da26a4814b2d35015'}};
 const gformReady=()=>!!GFORM.url&&Object.values(GFORM.fields).every(Boolean);
 function gformLink(v){const u=new URL(GFORM.url);for(const k in GFORM.fields)u.searchParams.delete(GFORM.fields[k]);if(/google\./.test(u.hostname))u.searchParams.set('usp','pp_url');for(const k in GFORM.fields)u.searchParams.set(GFORM.fields[k],v[k]);u.search=u.search.replace(/\+/g,'%20');return u.toString()}
