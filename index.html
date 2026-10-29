@@ -550,8 +550,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:-.01em}
 .band::after{inset:0;width:auto;height:auto;opacity:.22;z-index:-1;background:radial-gradient(circle,#fff 1.6px,transparent 2px) 0 0/22px 22px;mask-image:linear-gradient(115deg,transparent 35%,#000 100%);-webkit-mask-image:linear-gradient(115deg,transparent 35%,#000 100%)}
 .band-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .band .eyebrow{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);color:#fff;border-radius:99px;padding:4px 12px;font-size:12.5px;font-weight:700;letter-spacing:0}
-.moe{background:#fff;border-radius:14px;padding:6px 10px;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.12)}.moe img{height:34px;width:auto;display:block}
-.band.compact .moe img{height:28px}
+.moe{background:#fff;border-radius:18px;padding:8px 12px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.14);flex:0 0 auto}.moe img{height:64px;width:auto;display:block}
+.band.compact .moe img{height:54px}
 .band h1{font-size:clamp(30px,8vw,46px);font-weight:700;margin-top:4px;color:#fff}
 .band .grade{color:rgba(255,255,255,.9);font-weight:400;font-size:17px}
 .ids{padding-inline-end:0;gap:10px;margin-top:16px}
@@ -671,11 +671,16 @@ document.documentElement.lang='ar';document.documentElement.dir='rtl';
 /* ====== بيانات المادة ====== */
 const INFO={ministry:'وزارة التعليم',region:'الإدارة العامة للتعليم بمنطقة مكة المكرمة',subject:'المهارات الرقمية',grade:'الصف الرابع الابتدائي',teacher:'ماجد أحمد الزهراني',school:'مدرسة سلمة بن الأكوع الابتدائية'};
 /* رأس رسمي للبطاقات المصوّرة */
-function drawHead(x,W,P,logo,label,rr,font,txt){const HH=380;const g=x.createLinearGradient(0,0,W,HH);g.addColorStop(0,'#1d4166');g.addColorStop(1,'#10263d');x.fillStyle=g;x.fillRect(0,0,W,HH);x.fillStyle='#f6c445';x.fillRect(0,HH-8,W,8);
-  if(logo){const bw=230,bh=196,bx=P,by=40;rr(bx,by,bw,bh,24,'#ffffff');const sc=Math.min((bw-32)/logo.width,(bh-32)/logo.height);x.drawImage(logo,bx+(bw-logo.width*sc)/2,by+(bh-logo.height*sc)/2,logo.width*sc,logo.height*sc)}
-  font(700,28);txt(INFO.ministry,W-P,62,'#ffffff');font(400,24);txt(INFO.region,W-P,98,'#cfe0ef');txt(INFO.school,W-P,132,'#cfe0ef');
-  x.fillStyle='rgba(255,255,255,.18)';x.fillRect(W-P-560,152,560,2);
-  font(700,24);txt(label,W-P,196,'#f6c445');font(700,58);txt(INFO.subject,W-P,262,'#ffffff');font(400,28);txt(INFO.grade+'  ·  المعلم: '+INFO.teacher,W-P,316,'#cfe0ef');return HH}
+function softBg(x,W,H){x.fillStyle='#f2f6fb';x.fillRect(0,0,W,H);const a=x.createRadialGradient(W,420,0,W,420,700);a.addColorStop(0,'rgba(29,111,184,.08)');a.addColorStop(1,'rgba(29,111,184,0)');x.fillStyle=a;x.fillRect(0,0,W,H);const b=x.createRadialGradient(0,H,0,0,H,800);b.addColorStop(0,'rgba(63,179,122,.08)');b.addColorStop(1,'rgba(63,179,122,0)');x.fillStyle=b;x.fillRect(0,0,W,H)}
+function drawHead(x,W,P,logo,label,rr,font,txt){const HH=400;
+  const g=x.createLinearGradient(W,0,0,HH);g.addColorStop(0,'#1d6fb8');g.addColorStop(.6,'#1f9e8a');g.addColorStop(1,'#3fb37a');x.fillStyle=g;x.fillRect(0,0,W,HH);
+  x.save();x.globalAlpha=.10;x.fillStyle='#ffffff';x.beginPath();x.arc(W*.18,-40,260,0,Math.PI*2);x.fill();x.beginPath();x.arc(W*.62,HH+90,200,0,Math.PI*2);x.fill();x.restore();
+  if(logo){const bw=250,bh=210,bx=P,by=44;x.save();x.shadowColor='rgba(0,0,0,.18)';x.shadowBlur=30;x.shadowOffsetY=10;rr(bx,by,bw,bh,30,'#ffffff');x.restore();const sc=Math.min((bw-36)/logo.width,(bh-36)/logo.height);x.drawImage(logo,bx+(bw-logo.width*sc)/2,by+(bh-logo.height*sc)/2,logo.width*sc,logo.height*sc)}
+  font(700,30);txt(INFO.ministry,W-P,74,'#ffffff');font(400,24);txt(INFO.region,W-P,110,'rgba(255,255,255,.9)');txt(INFO.school,W-P,144,'rgba(255,255,255,.9)');
+  font(700,23);const lw=x.measureText(label).width+40;x.save();x.globalAlpha=.2;rr(W-P-lw,176,lw,46,23,'#ffffff');x.restore();x.strokeStyle='rgba(255,255,255,.45)';x.lineWidth=2;rr(W-P-lw,176,lw,46,23);x.stroke();txt(label,W-P-20,207,'#ffffff');
+  font(700,60);txt(INFO.subject,W-P,292,'#ffffff');font(400,28);txt(INFO.grade+'  ·  المعلم: '+INFO.teacher,W-P,342,'rgba(255,255,255,.92)');
+  const bg=x.createLinearGradient(0,0,0,60);bg.addColorStop(0,'#f2f6fb');bg.addColorStop(1,'#f2f6fb');x.fillStyle='#f2f6fb';x.beginPath();x.moveTo(0,HH);x.lineTo(0,HH-36);x.arcTo(0,HH-36,36,HH-36,0);x.quadraticCurveTo(0,HH,36,HH);x.lineTo(W-36,HH);x.quadraticCurveTo(W,HH,W,HH-36);x.lineTo(W,HH);x.closePath();x.fill();
+  return HH}
 /* فصول الصف الرابع في المدرسة — عدّلها حسب عدد الفصول */
 let CLASSES=['رابع ١','رابع ٢','رابع ٣']; /* تُحدَّث تلقائيًا من ورقة «الفصول» في جدول المعلم */
 let CLASSES_LOADING=true;
@@ -1508,20 +1513,20 @@ async function reportCanvas(R){
   try{await Promise.race([Promise.all(['400 30px "HNArabic"','700 30px "HNArabic"'].map(f=>document.fonts.load(f))),sleep(2500)])}catch(e){}let logo=null;try{logo=await loadImg(MOE_LOGO)}catch(e){}
   const W=1080,P=60,IN=W-P*2;const c=document.createElement('canvas');c.width=W;c.height=4200;const x=c.getContext('2d');
   const DF='"HNArabic","IBM Plex Sans Arabic",Tahoma,sans-serif',BF=DF;
-  const C={navy:'#16324f',ink:'#14283d',muted:'#5d6f81',line:'#dbe4ec',accent:'#e8692f',sun:'#f6c445',teal:'#17806f',ok:'#17844e',okbg:'#e3f5ea',bad:'#c93b3b',badbg:'#fbe6e6',card:'#ffffff'};
+  const C={navy:'#16324f',ink:'#13263a',muted:'#5d6f81',line:'#dbe4ec',accent:'#1d6fb8',sun:'#ffc94a',teal:'#1f9e8a',ok:'#17844e',okbg:'#e3f5ea',bad:'#c93b3b',badbg:'#fbe6e6',card:'#ffffff'};
   x.direction='rtl';
   const font=(w,s,f)=>x.font=`${w} ${s}px ${f||BF}`;
-  const rr=(X,Y,w,h,r,fill,stroke)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.strokeStyle=stroke;x.lineWidth=2;x.stroke()}};
+  const rr=(X,Y,w,h,r,fill,stroke)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();if(fill){if(fill==='#ffffff'){x.save();x.shadowColor='rgba(20,60,100,.10)';x.shadowBlur=26;x.shadowOffsetY=8;x.fillStyle=fill;x.fill();x.restore()}else{x.fillStyle=fill;x.fill()}}if(stroke){x.strokeStyle=stroke;x.lineWidth=2;x.stroke()}};
   const txt=(s,X,Y,col,align)=>{x.fillStyle=col;x.textAlign=align||'right';x.fillText(s,X,Y)};
   const lines=(s,maxW)=>{const out=[];String(s||'').split('\n').forEach(par=>{let cur='';par.split(/\s+/).filter(Boolean).forEach(w=>{const t=cur?cur+' '+w:w;if(x.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t});out.push(cur)});return out};
   /* الخلفية */
-  x.fillStyle='#eef3f7';x.fillRect(0,0,W,c.height);x.strokeStyle='rgba(22,50,79,.05)';x.lineWidth=1;for(let i=0;i<W;i+=30){x.beginPath();x.moveTo(i,0);x.lineTo(i,c.height);x.stroke()}for(let j=0;j<c.height;j+=30){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke()}
+  softBg(x,W,c.height);
   /* الرأس */
   const HH=drawHead(x,W,P,logo,'تقرير إنجاز · منصة مشاريع المنزل',rr,font,txt);
   let y=HH+40;
   /* بطاقة الطالب والدرجة */
   font(700,32);const lt=lines(`${R.term} · ${R.title}`,IN-360);const sh=Math.max(310,150+lt.length*44);
-  rr(P,y,IN,sh,28,C.card);x.fillStyle=C.accent;x.fillRect(W-P-8,y+30,8,sh-60);
+  rr(P,y,IN,sh,28,C.card);{const gb=x.createLinearGradient(0,y+30,0,y+sh-30);gb.addColorStop(0,'#1d6fb8');gb.addColorStop(1,'#3fb37a');rr(W-P-10,y+30,10,sh-60,5,gb)}
   font(600,24);txt('الطالب',W-P-40,y+56,C.muted);
   font(700,50,DF);txt(R.name,W-P-40,y+112,C.ink);
   const d=new Date(R.at);font(400,26);txt(`فصل ${R.cls}  ·  ${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,W-P-40,y+152,C.muted);
@@ -1535,7 +1540,7 @@ async function reportCanvas(R){
   y+=sh+28;
   /* تفصيل الدرجة */
   const parts=[['المهمة العملية',R.t,7,C.teal],['الأسئلة',R.q,(R.qa||[]).length||3,C.accent]];const pw=(IN-20)/2;
-  parts.forEach(([n,v,m,col],i)=>{const X=W-P-(i+1)*pw-i*20;rr(X,y,pw,130,22,C.card);font(600,24);txt(n,X+pw-28,y+44,C.muted);font(700,44,DF);txt(`${ar(v)} / ${ar(m)}`,X+pw-28,y+96,C.ink);rr(X+24,y+108,pw-48,10,5,'#e6edf3');if(v>0)rr(X+pw-24-(pw-48)*(v/m),y+108,Math.max(10,(pw-48)*(v/m)),10,5,col)});
+  parts.forEach(([n,v,m,col],i)=>{const X=W-P-(i+1)*pw-i*20;rr(X,y,pw,130,22,C.card);font(600,24);txt(n,X+pw-28,y+44,C.muted);font(700,44,DF);txt(`${ar(v)} / ${ar(m)}`,X+pw-28,y+96,C.ink);rr(X+24,y+108,pw-48,10,5,'#e6edf3');{const fr=Math.min(1,v/m);if(fr>0)rr(X+pw-24-(pw-48)*fr,y+108,Math.max(10,(pw-48)*fr),10,5,col)}});
   y+=158;
   /* قسم عام */
   const section=(title,col,bodyH,draw)=>{rr(P,y,IN,bodyH+90,26,C.card);x.fillStyle=col;rr(W-P-58,y+30,26,26,6,col);font(700,34,DF);txt(title,W-P-74,y+56,C.ink);draw(y+100);y+=bodyH+90+24};
@@ -1703,14 +1708,14 @@ async function examCanvas(E){
   const W=1080,P=60,IN=W-P*2;const est=1160+E.tasks.reduce((n,t)=>n+330+Math.ceil(String(t.detail).length/34)*48+(t.sol||[]).reduce((m,s)=>m+Math.ceil(s.length/36)*46+12,0),0);
   const c=document.createElement('canvas');c.width=W;c.height=Math.min(16000,Math.ceil(est*1.25));const x=c.getContext('2d');
   const DF='"HNArabic","IBM Plex Sans Arabic",Tahoma,sans-serif';
-  const C={ink:'#14283d',muted:'#5d6f81',accent:'#e8692f',sun:'#f6c445',teal:'#17806f',ok:'#17844e',okbg:'#e3f5ea',bad:'#c93b3b',badbg:'#fbe6e6',card:'#ffffff',vio:'#7656c4'};
+  const C={ink:'#13263a',muted:'#5d6f81',accent:'#1d6fb8',sun:'#ffc94a',teal:'#1f9e8a',ok:'#17844e',okbg:'#e3f5ea',bad:'#c93b3b',badbg:'#fbe6e6',card:'#ffffff',vio:'#7656c4'};
   x.direction='rtl';const font=(w,s)=>x.font=`${w} ${s}px ${DF}`;
-  const rr=(X,Y,w,h,r,fill)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();if(fill){x.fillStyle=fill;x.fill()}};
+  const rr=(X,Y,w,h,r,fill)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();if(fill){if(fill==='#ffffff'){x.save();x.shadowColor='rgba(20,60,100,.10)';x.shadowBlur=26;x.shadowOffsetY=8;x.fillStyle=fill;x.fill();x.restore()}else{x.fillStyle=fill;x.fill()}}};
   const txt=(s,X,Y,col,align)=>{x.fillStyle=col;x.textAlign=align||'right';x.fillText(s,X,Y)};
   const lines=(s,maxW)=>{const out=[];String(s||'').split('\n').forEach(par=>{let cur='';par.split(/\s+/).filter(Boolean).forEach(w=>{const t=cur?cur+' '+w:w;if(x.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t});out.push(cur)});return out};
-  x.fillStyle='#eef3f7';x.fillRect(0,0,W,c.height);
+  softBg(x,W,c.height);
   const HH=drawHead(x,W,P,logo,EXAM_TITLE+' · مهام عملية',rr,font,txt);
-  let y=HH+40;const sh=320;rr(P,y,IN,sh,28,C.card);x.fillStyle=C.accent;x.fillRect(W-P-8,y+30,8,sh-60);
+  let y=HH+40;const sh=320;rr(P,y,IN,sh,28,C.card);{const gb=x.createLinearGradient(0,y+30,0,y+sh-30);gb.addColorStop(0,'#1d6fb8');gb.addColorStop(1,'#3fb37a');rr(W-P-10,y+30,10,sh-60,5,gb)}
   font(600,24);txt('الطالب',W-P-40,y+56,C.muted);font(700,50);txt(E.name,W-P-40,y+112,C.ink);
   const d=new Date(E.at);font(400,26);txt(`فصل ${E.cls}  ·  ${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,W-P-40,y+152,C.muted);
   font(700,32);txt(EXAM_TITLE,W-P-40,y+212,C.accent);font(400,26);txt(`${ar(E.tasks.length)} مهام عملية · الدرجة الكلية ${ar(E.total)}`,W-P-40,y+256,C.muted);
