@@ -499,6 +499,19 @@ button.aw-tab{border:0;background:transparent;font:inherit;font-size:12.5px}butt
 .rec-h{font-weight:700;align-self:stretch;text-align:center}
 .rec-wave{display:flex;align-items:center;gap:3px;height:48px}.rec-wave i{display:block;width:4px;border-radius:2px;background:#ef4444;opacity:.85}
 .rec-app audio{width:100%}.rec-pick{background:#ef4444!important;color:#fff!important}
+
+.exam-task{border-top:5px solid var(--accent)}.exam-l{font-weight:700;color:var(--accent);margin:-6px 0 6px;font-size:14px}
+.exam-info ul{margin:6px 0 0;padding-inline-start:20px}.exam-builder{border:2px solid var(--accent)}
+
+.reveal .goals li[data-ok]::before{width:20px;height:20px;margin-top:3px;border-radius:50%;border:0;display:grid;place-items:center;font-size:13px;font-weight:900;color:#fff}
+.reveal .goals li[data-ok="1"]{color:var(--ok)}.reveal .goals li[data-ok="1"]::before{content:"✓";background:var(--ok)}
+.reveal .goals li[data-ok="0"]{color:var(--bad)}.reveal .goals li[data-ok="0"]::before{content:"✗";background:var(--bad)}
+.card.locked.reveal>*:has(.goals){opacity:1}.card.locked.reveal .goals{opacity:1}
+.ex-fin{margin-top:12px;display:flex;flex-direction:column;gap:8px;opacity:1!important;pointer-events:auto!important}
+.ex-res{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;border:2px solid}
+.ex-res.ok{border-color:var(--ok);background:var(--ok-bg)}.ex-res.mid{border-color:var(--control);background:color-mix(in srgb,var(--control) 12%,var(--surface))}.ex-res.bad{border-color:var(--bad);background:var(--bad-bg)}
+.ex-res-h{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.ex-pts{font-family:var(--f-display);font-weight:800;font-size:22px}
+.exam-task.done{border-top-color:var(--ok)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -741,7 +754,7 @@ const TYPE_TAG={sort:'تصنيف',order:'ترتيب خطوات',hotspot:'محا�
 const ENG={};
 /* وضع الاختبار: لا يُظهر للطالب أثناء الحل أي إشارة إلى الصواب أو الخطأ */
 const EXAM=true;
-const goalsList=items=>h('ul',{class:'goals'+(EXAM?' plain':'')},items.map(([t,on])=>h('li',{class:!EXAM&&on?'on':''},t)));
+const goalsList=items=>h('ul',{class:'goals'+(EXAM?' plain':'')},items.map(([t,on])=>h('li',{class:!EXAM&&on?'on':'','data-ok':on?'1':'0'},t)));
 
 /* أسئلة اختيار */
 function quizEls(qs,onAnswer){return qs.map((q,qi)=>{const opts=shuffle(q.slice(1).map((t,i)=>({t,ok:i===0})));const row=h('div',{class:'opts'});
@@ -1195,7 +1208,7 @@ ENG.safety=(cfg,report)=>{const s={pub:true,loc:true,dm:true,age:true};let pwOK=
     inbox.replaceChildren(...M.map(m=>h('div',{class:'mail'+(!m.safe&&reported?' gone':'')},h('div',{class:'mail-h'},h('span',{class:'av',style:`background:${m.safe?'#2f78c4':'#7a7a7a'}`},m.f.trim()[0]),h('b',{},m.f),h('small',{},'الآن')),h('p',{},m.t),!m.safe?(reported?h('p',{class:'msg ok'},'تم الإبلاغ عن الرسالة وحذفها.'):h('div',{class:'row'},h('button',{type:'button',class:'btn ghost',onclick:()=>{clicked=true;touched=true;drawInbox();upd()}},'افتح الرابط'),h('button',{type:'button',class:'btn',onclick:()=>{reported=true;touched=true;drawInbox();upd()}},'أبلغ واحذف'))):null)),clicked?h('p',{class:'msg'},'فُتح الرابط.'):null)}
   function upd(){const priv=!s.pub&&!s.loc&&!s.dm&&!s.age;const l=[['أنشئ كلمة مرور قوية تحقق كل الشروط',pwOK],['اضبط الخصوصية: أغلق كل الخيارات غير الآمنة',priv],['أبلغ عن الرسالة المخادعة واحذفها',reported],['لا تفتح الرابط المخادع',touched&&!clicked]];goalsUpd(gl,l);const r=scoreOf(l);
     if(touched)report({score:r.s,done:r.done,detail:`كلمة المرور: ${pwOK?'قوية':'غير مكتملة'}، الخصوصية: ${priv?'آمنة':'تحتاج ضبطًا'}، الرسالة المخادعة: ${reported?'أبلغ عنها':clicked?'فتح رابطها':'لم يتعامل معها'}`})}
-  drawInbox();check();touched=false;upd();
+  drawInbox();check();touched=false;
   return h('div',{class:'stack',style:'gap:14px'},h('div',{class:'sub'},h('h3',{},'١. كلمة المرور'),h('p',{class:'hint'},'لا تكتب كلمة مرورك الحقيقية هنا، اخترع واحدة للتدريب. الكلمة القوية تحقق الشروط التالية:'),pw,meter,rules),
     h('div',{class:'sub game'},h('h3',{},'٢. إعدادات الخصوصية — حساب «نجوم المعرفة»'),h('p',{class:'hint'},'أطفئ كل خيار يكشف معلوماتك للغرباء.'),privacy),h('div',{class:'sub'},h('h3',{},'٣. صندوق الرسائل'),inbox),gl)};
 
@@ -1262,8 +1275,8 @@ function renderHome(){const total=ORDER.length,doneN=ORDER.filter(id=>progress[i
 
 function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}const QZ=L.quiz;let reviewed=false,initDone=false;const st={task:{score:0,done:false,detail:'لم يبدأ المهمة'},quiz:new Array(QZ.length).fill(null),qa:[],reflect:''};
   const locked=ASSIGNED.length>0;const sent=progress[L.id];
-  const sendBox=h('section',{class:'card send stack'});const report=r=>{if(reviewed)return;st.task=r;refresh()};
-  const taskEl=ENG[L.task.type](L.task,report);
+  const sendBox=h('section',{class:'card send stack'});let building=true;const report=r=>{if(reviewed||building)return;st.task=r;refresh()};
+  const taskEl=ENG[L.task.type](L.task,report);building=false;
   let taskCard,quizCard;const reviewBox=h('section',{class:'card review stack'});
   const idx=ORDER.indexOf(L.id),next=ORDER[idx+1],prev=ORDER[idx-1];
   const backLink=!locked?h('a',{href:'#home',class:'back'},'→ كل الدروس'):ASSIGNED.length>1?h('a',{href:'#home',class:'back'},'→ دروسي المطلوبة'):null;
@@ -1302,7 +1315,7 @@ function renderLesson(L){if(progress[L.id]){renderSent(L,progress[L.id]);return}
       sent.link?h('div',{class:'row'},h('a',{class:'btn ghost',href:sent.link,target:'_blank',rel:'noopener'},'أعد فتح النموذج بإجاباتي نفسها')):null)}
   function drawReview(ready){if(!reviewed){reviewBox.replaceChildren(h('div',{class:'sec-t'},h('h2',{},'راجع إجاباتك وتعلّم من أخطائك')),
       h('p',{},'عندما تنتهي من المهمة والأسئلة، اضغط الزر لترى الحل الصحيح خطوة بخطوة، وأين أخطأت.'),h('p',{class:'note'},'تنبيه: بعد عرض الحل تُغلق إجاباتك ولا يمكن تعديلها.'),
-      h('button',{type:'button',class:'btn','aria-disabled':ready?'false':'true',onclick:()=>{if(!ready)return;reviewed=true;taskCard.classList.add('locked');quizCard.classList.add('locked');refresh();reviewBox.scrollIntoView({behavior:'smooth',block:'start'})}},'انتهيت — اعرض الحل الصحيح'),
+      h('button',{type:'button',class:'btn','aria-disabled':ready?'false':'true',onclick:()=>{if(!ready)return;reviewed=true;taskCard.classList.add('locked','reveal');quizCard.classList.add('locked');refresh();reviewBox.scrollIntoView({behavior:'smooth',block:'start'})}},'انتهيت — اعرض الحل الصحيح'),
       ready?null:h('p',{class:'msg bad'},'نفّذ المهمة وأجب عن كل الأسئلة أولًا.'));return}
     const p=pts();const R=buildRep(p);
     reviewBox.replaceChildren(h('div',{class:'sec-t'},h('h2',{},'الحل الصحيح: تعلّم من أخطائك')),h('p',{class:'note'},'أُغلقت إجاباتك. اقرأ الحل جيدًا، ثم أرسل إنجازك.'),
@@ -1445,9 +1458,122 @@ function renderTeacher(){const base=location.origin&&location.origin!=='null'&&!
   app.replaceChildren(h('div',{class:'stack'},h('header',{class:'band teacher-band'},h('div',{class:'eyebrow'},'خاص بالمعلم — لا تشارك هذه الصفحة مع الطلاب'),h('h1',{},'صفحة المعلم'),h('div',{class:'grade'},'إنشاء روابط الدروس للطلاب'),h('div',{class:'ids'},h('div',{class:'id'},h('small',{},'المعلم'),h('b',{},INFO.teacher)),h('div',{class:'id'},h('small',{},'المادة'),h('b',{},INFO.subject+' — '+INFO.grade)))),h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'١. حدّد الدرس ثم انسخ رابطه'),
     h('p',{},'حدّد الدرس الذي تريد أن يحلّه الطلاب، ثم انسخ الرابط وأرسله لهم أو لأولياء الأمور. الطالب الذي يفتح الرابط يرى هذا الدرس فقط.'),
     base?null:h('p',{class:'msg bad'},'الروابط تعمل من موقعك المنشور (مثل GitHub Pages). افتح هذه الصفحة من موقعك ليظهر الرابط كاملًا.'),
-    h('div',{class:'send card'},out)),h('section',{class:'card'},list)))}
+    h('div',{class:'send card'},out)),h('section',{class:'card'},list),examBuilder(base),deviceReset()))}
+function deviceReset(){const m=h('p',{class:'note'});let armed=false;const b=h('button',{type:'button',class:'btn ghost',onclick:()=>{if(!armed){armed=true;b.textContent='اضغط مرة أخرى للتأكيد';m.textContent='سيُمسح من هذا الجهاز فقط: الدروس والاختبارات المرسلة واسم الطالب. لا يتأثر جدولك في Google.';return}
+    try{localStorage.removeItem('rqm4:progress');localStorage.removeItem('rqm4:student')}catch(e){}progress={};student={name:'',cls:''};armed=false;b.textContent='مسح الدروس المرسلة من هذا الجهاز';m.textContent='تم المسح. يمكنك تجربة الدروس من جديد على هذا الجهاز.'}},'مسح الدروس المرسلة من هذا الجهاز');
+  return h('section',{class:'card stack'},h('h2',{style:'font-size:20px'},'٣. البدء من جديد على هذا الجهاز'),h('p',{},'بعد التجربة تبقى الدروس التي أرسلتها مقفلة على جهازك. امسحها من هنا لتجربها مرة أخرى.'),b,m)}
 
-function route(){const id=location.hash.slice(1);if(isTeacher())renderTeacher();else if(ASSIGNED.length){if(ASSIGNED.length===1)renderLesson(LESSONS[ASSIGNED[0]]);else if(ASSIGNED.includes(id))renderLesson(LESSONS[id]);else renderAssigned()}else if(REQUIRE_LINK)renderNeedLink();else if(LESSONS[id])renderLesson(LESSONS[id]);else renderHome();window.scrollTo(0,0)}
+/* ====== الاختبار النهائي: مهام عملية فقط ====== */
+const EXAM_IDS=(PARAMS.get('exam')||'').split(',').map(x=>x.trim()).filter(id=>LESSONS[id]);
+const EXAM_TOTAL=Math.max(1,Math.min(100,parseInt(toEnDigits(PARAMS.get('total')||'20'),10)||20));
+function toEnDigits(v){return String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))}
+function examKey(ids,total){let hsh=0;const s=ids.join(',')+'|'+total;for(let i=0;i<s.length;i++)hsh=(hsh*31+s.charCodeAt(i))|0;return 'exam-'+(hsh>>>0).toString(36)}
+const fmt1=n=>{const r=Math.round(n*10)/10;return Number.isInteger(r)?String(r):r.toFixed(1)};
+const EXAM_TITLE='الاختبار النهائي';
+
+function examText(E){const d=new Date(E.at);return[`${EXAM_TITLE} — ${INFO.subject} — ${INFO.grade}`,`${INFO.school} · المعلم: ${INFO.teacher}`,'',`الطالب: ${E.name} — الفصل: ${E.cls}`,`التاريخ: ${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`,'',
+  `الدرجة: ${fmt1(E.score)} من ${E.total}  (${Math.round(E.pct*100)}٪)`,'',...E.tasks.map((t,i)=>`المهمة ${i+1}: ${t.title} — ${fmt1(t.pts)} من ${fmt1(t.max)} — ${t.done?'مكتملة':'غير مكتملة'}\nما أنجزه الطالب: ${t.detail}\nالحل الصحيح: ${(t.sol||[]).join(' ← ')}`)].join('\n')}
+
+async function examCanvas(E){
+  try{await Promise.race([Promise.all(['400 30px "HNArabic"','700 30px "HNArabic"'].map(f=>document.fonts.load(f))),sleep(2500)])}catch(e){}let logo=null;try{logo=await loadImg(MOE_LOGO)}catch(e){}
+  const W=1080,P=60,IN=W-P*2;const est=1100+E.tasks.reduce((n,t)=>n+330+Math.ceil(String(t.detail).length/34)*48+(t.sol||[]).reduce((m,s)=>m+Math.ceil(s.length/36)*46+12,0),0);
+  const c=document.createElement('canvas');c.width=W;c.height=Math.min(16000,Math.ceil(est*1.25));const x=c.getContext('2d');
+  const DF='"HNArabic","IBM Plex Sans Arabic",Tahoma,sans-serif';
+  const C={ink:'#14283d',muted:'#5d6f81',accent:'#e8692f',sun:'#f6c445',teal:'#17806f',ok:'#17844e',okbg:'#e3f5ea',bad:'#c93b3b',badbg:'#fbe6e6',card:'#ffffff',vio:'#7656c4'};
+  x.direction='rtl';const font=(w,s)=>x.font=`${w} ${s}px ${DF}`;
+  const rr=(X,Y,w,h,r,fill)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();if(fill){x.fillStyle=fill;x.fill()}};
+  const txt=(s,X,Y,col,align)=>{x.fillStyle=col;x.textAlign=align||'right';x.fillText(s,X,Y)};
+  const lines=(s,maxW)=>{const out=[];String(s||'').split('\n').forEach(par=>{let cur='';par.split(/\s+/).filter(Boolean).forEach(w=>{const t=cur?cur+' '+w:w;if(x.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t});out.push(cur)});return out};
+  x.fillStyle='#eef3f7';x.fillRect(0,0,W,c.height);
+  const HH=330;const g=x.createLinearGradient(0,0,W,HH);g.addColorStop(0,'#1d4166');g.addColorStop(1,'#10263d');x.fillStyle=g;x.fillRect(0,0,W,HH);x.fillStyle=C.sun;x.fillRect(0,HH-8,W,8);
+  if(logo){const bw=250,bh=210,bx=P,by=(HH-bh)/2-4;rr(bx,by,bw,bh,26,'#ffffff');const sc=Math.min((bw-36)/logo.width,(bh-36)/logo.height);x.drawImage(logo,bx+(bw-logo.width*sc)/2,by+(bh-logo.height*sc)/2,logo.width*sc,logo.height*sc)}
+  font(700,26);txt(EXAM_TITLE+' · مهام عملية',W-P,66,C.sun);font(700,66);txt(INFO.subject,W-P,146,'#ffffff');font(400,32);txt(INFO.grade,W-P,198,'#e3edf6');font(400,27);txt(INFO.school,W-P,246,'#b9cde0');txt('المعلم: '+INFO.teacher,W-P,290,'#b9cde0');
+  let y=HH+40;const sh=320;rr(P,y,IN,sh,28,C.card);x.fillStyle=C.accent;x.fillRect(W-P-8,y+30,8,sh-60);
+  font(600,24);txt('الطالب',W-P-40,y+56,C.muted);font(700,50);txt(E.name,W-P-40,y+112,C.ink);
+  const d=new Date(E.at);font(400,26);txt(`فصل ${E.cls}  ·  ${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,W-P-40,y+152,C.muted);
+  font(700,32);txt(EXAM_TITLE,W-P-40,y+212,C.accent);font(400,26);txt(`${ar(E.tasks.length)} مهام عملية · الدرجة الكلية ${ar(E.total)}`,W-P-40,y+256,C.muted);
+  const pct=E.pct,lvl=pct>=.9?['ممتاز',C.ok]:pct>=.7?['جيد جدًا',C.teal]:pct>=.5?['جيد','#b7791f']:['يحتاج إلى متابعة',C.bad];
+  const cx=P+150,rad=92,cy=y+(sh-(rad*2+70))/2+rad;x.lineCap='round';x.lineWidth=22;x.strokeStyle='#e6edf3';x.beginPath();x.arc(cx,cy,rad,0,Math.PI*2);x.stroke();
+  x.strokeStyle=lvl[1];x.beginPath();x.arc(cx,cy,rad,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(.02,pct));x.stroke();
+  font(700,70);txt(ar(fmt1(E.score)),cx,cy+22,C.ink,'center');font(600,24);txt('من '+ar(E.total),cx,cy+60,C.muted,'center');
+  font(700,26);const lw=x.measureText(lvl[0]).width+40;rr(cx-lw/2,cy+rad+24,lw,46,23,lvl[1]);txt(lvl[0],cx,cy+rad+57,'#ffffff','center');
+  y+=sh+28;
+  E.tasks.forEach((t,i)=>{font(400,28);const dl=lines('ما أنجزه: '+t.detail,IN-80);const sl=(t.sol||[]).map((s,k)=>lines(`${ar(k+1)}. ${s}`,IN-120));const solH=sl.reduce((n,l)=>n+l.length*42+8,0);
+    const H=150+dl.length*44+(solH?solH+70:0);rr(P,y,IN,H,26,C.card);
+    font(700,32);const tl=lines(`المهمة ${ar(i+1)}: ${t.title}`,IN-260);txt(tl[0],W-P-40,y+56,C.ink);
+    const ratio=t.max?t.pts/t.max:0,col=ratio>=.8?C.ok:ratio>=.5?'#b7791f':C.bad,bg=ratio>=.8?C.okbg:ratio>=.5?'#fdf1d6':C.badbg;
+    font(700,30);const sc=`${ar(fmt1(t.pts))} / ${ar(fmt1(t.max))}`;const sw=x.measureText(sc).width+40;rr(P+40,y+22,sw,50,25,bg);txt(sc,P+40+sw/2,y+57,col,'center');
+    font(400,24);txt(`${t.type} · ${t.done?'مكتملة':'غير مكتملة'}`,W-P-40,y+98,C.muted);
+    font(400,28);dl.forEach((l,k)=>txt(l,W-P-40,y+146+k*44,C.ink));
+    if(solH){const sy=y+150+dl.length*44;rr(P+40,sy,IN-80,solH+50,16,'#f6f3fd');x.fillStyle=C.vio;x.fillRect(W-P-46,sy,6,solH+50);font(700,26);txt('الحل الصحيح',W-P-66,sy+36,C.vio);font(400,26);let yy=sy+80;sl.forEach(ls=>{ls.forEach(l=>{txt(l,W-P-66,yy,C.ink);yy+=42});yy+=8})}
+    y+=H+24});
+  font(400,22);txt(`صدر من منصة مشاريع المنزل · ${INFO.subject} · ${INFO.school}`,W/2,y+30,C.muted,'center');y+=60;
+  const out=document.createElement('canvas');out.width=W;out.height=Math.min(y,c.height);out.getContext('2d').drawImage(c,0,0);return out}
+
+function renderExam(){const eid=examKey(EXAM_IDS,EXAM_TOTAL);const done=progress[eid];if(done){renderExamSent(done);return}
+  const n=EXAM_IDS.length,per=EXAM_TOTAL/n;const DK='draft:'+eid;const draft=store.get(DK,{});
+  const res=EXAM_IDS.map((id,i)=>draft[i]?{...draft[i],started:true,locked:true}:{score:0,done:false,detail:'لم يبدأ المهمة',started:false,locked:false});
+  const resultBox=(i)=>{const r=res[i],pts=Math.max(0,Math.min(1,r.score||0))*per,ratio=pts/per,cl=ratio>=.8?'ok':ratio>=.5?'mid':'bad';
+    return h('div',{class:'ex-res '+cl},h('div',{class:'ex-res-h'},h('b',{},ratio>=.999?'✓ أحسنت! أنجزت المهمة بشكل صحيح':ratio>0?'أنجزت جزءًا من المهمة':'✗ لم تُنجز المهمة بشكل صحيح'),h('span',{class:'ex-pts'},`${ar(fmt1(pts))} / ${ar(fmt1(per))}`)),
+      h('p',{class:'rv-did'},h('b',{},'ما فعلته: '),r.detail),h('p',{style:'font-weight:700;margin-top:6px'},'الخطوات الصحيحة:'),h('ol',{class:'rv-steps'},(SOL[EXAM_IDS[i]]||[]).map(x=>h('li',{},x))),h('p',{class:'note'},'🔒 أُغلقت هذه المهمة ولا يمكن إعادتها.'))};
+  let examInit=false;
+  const cards=EXAM_IDS.map((id,i)=>{const L=LESSONS[id];const head=[h('div',{class:'sec-t'},h('h2',{},`المهمة ${ar(i+1)}`),h('span',{class:'tag'},`${ar(fmt1(per))} درجات`)),h('p',{class:'exam-l'},`${L.unitLabel} · ${L.title}`)];
+    if(res[i].locked)return h('section',{class:'card exam-task done'},...head,resultBox(i));
+    let building=true;const fin=h('div',{class:'ex-fin'});
+    const el=ENG[L.task.type](L.task,r=>{if(building||res[i].locked)return;res[i]={...r,started:true,locked:false};drawFin();if(examInit)refresh()});building=false;
+    const card=h('section',{class:'card exam-task'},...head,h('p',{class:'intro'},L.task.intro),el,fin);
+    let armedF=false;
+    function drawFin(){const b=h('button',{type:'button',class:'btn','aria-disabled':res[i].started?'false':'true',onclick:()=>{if(!res[i].started)return;if(!armedF){armedF=true;b.textContent='اضغط مرة أخرى للتأكيد';return}
+        res[i].locked=true;const d2=store.get(DK,{});d2[i]={score:res[i].score,done:res[i].done,detail:res[i].detail};store.set(DK,d2);
+        card.classList.add('locked','reveal');fin.replaceChildren(resultBox(i));refresh();fin.scrollIntoView({behavior:'smooth',block:'nearest'})}},'أنهيت هذه المهمة — اعرض النتيجة');
+      fin.replaceChildren(h('p',{class:'note'},res[i].started?'عندما تنتهي اضغط الزر لترى نتيجتك في هذه المهمة. بعدها تُغلق ولا يمكن إعادتها.':'ابدأ المهمة أولًا.'),b)}
+    drawFin();return card});
+  const sendBox=h('section',{class:'card send stack'});
+  const nm=h('input',{type:'text',id:'send-name',value:student.name,placeholder:'الاسم الثلاثي',autocomplete:'name',oninput:e=>{student.name=e.target.value.trim();store.set('student',student);refresh()}});
+  const cl=clsSelect('send-cls',v=>{student.cls=v;store.set('student',student);refresh()});
+  const dyn=h('div',{class:'stack',style:'gap:10px'});let armed=false;
+  sendBox.append(h('h2',{style:'font-size:22px'},'سلّم الاختبار'),h('div',{class:'row'},h('div',{class:'field'},h('label',{for:'send-name'},'اسم الطالب'),nm),h('div',{class:'field',style:'flex:0 1 140px'},h('label',{for:'send-cls'},'الفصل'),cl)),dyn);
+  function calc(){const tasks=EXAM_IDS.map((id,i)=>{const L=LESSONS[id];return{id,title:L.title,type:TYPE_TAG[L.task.type],max:per,pts:Math.max(0,Math.min(1,res[i].score||0))*per,done:!!res[i].done,detail:res[i].detail,sol:SOL[id]||[]}});
+    const score=Math.round(tasks.reduce((a,t)=>a+t.pts,0)*2)/2;return{name:student.name,cls:student.cls,at:Date.now(),total:EXAM_TOTAL,score,pct:score/EXAM_TOTAL,tasks,eid,ids:EXAM_IDS}}
+  function refresh(){armed=false;const miss=[];if(student.name.split(/\s+/).filter(Boolean).length<2)miss.push('اكتب اسمك الثنائي أو الثلاثي');if(!student.cls)miss.push('اختر فصلك');
+    const unstarted=res.map((r,i)=>r.locked?null:ar(i+1)).filter(Boolean);const ready=!miss.length;
+    const err=h('p',{class:'msg bad'});
+    const sb=h('button',{type:'button',class:'btn wa','aria-disabled':ready?'false':'true',onclick:async()=>{if(!ready||sb.dataset.busy)return;
+      if(unstarted.length&&!armed){armed=true;sb.textContent='اضغط مرة أخرى للتسليم';err.textContent=`لم تُنهِ المهام: ${unstarted.join('، ')}. ستُحسب كما هي الآن. هل تريد التسليم؟`;return}
+      sb.dataset.busy='1';sb.textContent='جارٍ التسليم…';const E=calc();let image='',imgW=0,imgH=0;try{const cv=await examCanvas(E);image=cv.toDataURL('image/jpeg',.82).split(',')[1];imgW=cv.width;imgH=cv.height}catch(e){}
+      const payload={exam:true,examId:eid,title:EXAM_TITLE,lessons:E.tasks.map((t,i)=>`${i+1}. ${t.title}`).join(' | '),name:E.name,cls:E.cls,score:E.score,total:E.total,pct:E.pct,
+        tasks:E.tasks.map((t,i)=>`المهمة ${i+1} (${t.title}): ${fmt1(t.pts)} من ${fmt1(t.max)} — ${t.detail}`).join('\n'),report:examText(E),image,imgW,imgH};
+      try{if(!SHEET_URL)throw new Error('no sheet');const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();
+        if(j.status==='saved'||j.status==='duplicate'){try{localStorage.removeItem('rqm4:'+DK)}catch(e){}progress[eid]={exam:true,at:Date.now(),dup:j.status==='duplicate',score:j.status==='duplicate'&&j.score!=null?j.score:E.score,total:E.total,E:j.status==='duplicate'?null:E};store.set('progress',progress);renderExamSent(progress[eid]);window.scrollTo(0,0);return}
+        throw new Error(j.message||'error')}catch(e){delete sb.dataset.busy;sb.textContent='سلّم الاختبار';err.textContent='تعذّر التسليم. تأكد من اتصالك بالإنترنت ثم اضغط الزر مرة أخرى.'}}},'سلّم الاختبار');
+    dyn.replaceChildren(ready?h('p',{class:'note'},'راجع كل المهام قبل التسليم. يُقبل تسليم واحد فقط، ولا يمكن التعديل بعده.'):h('p',{class:'msg bad'},'قبل التسليم: '+miss.join('، ')+'.'),h('div',{class:'row'},sb),err)}
+  examInit=true;refresh();
+  app.replaceChildren(h('div',{class:'stack'},masthead(true),
+    h('div',{class:'l-head'},h('div',{class:'meta'},`${INFO.subject} · ${INFO.grade}`),h('h1',{},EXAM_TITLE),h('div',{class:'ctx'},`المعلم ${INFO.teacher} · ${INFO.school}`)),
+    h('div',{class:'idea exam-info'},h('b',{},'تعليمات الاختبار'),h('ul',{},h('li',{},`عدد المهام: ${ar(n)} مهام عملية، والدرجة الكلية ${ar(EXAM_TOTAL)}.`),h('li',{},'نفّذ المهمة، ثم اضغط «أنهيت هذه المهمة» لترى الصحيح والخطأ في خطواتك.'),h('li',{},'بعد إنهاء المهمة تُغلق ولا يمكن إعادتها.'),h('li',{},'بعد إنهاء كل المهام سلّم الاختبار. يُقبل تسليم واحد فقط.'))),
+    ...cards,sendBox))}
+
+function renderExamSent(P){const E=P.E;const d=new Date(P.at);const img=h('img',{class:'rep-img',alt:'تقرير الاختبار'});const msg=h('p',{class:'note'});
+  if(E)examCanvas(E).then(cv=>{img.src=cv.toDataURL('image/jpeg',.9)}).catch(()=>img.remove());
+  const sv=E?h('button',{type:'button',class:'btn ghost',onclick:async()=>{const cv=await examCanvas(E);const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${EXAM_TITLE} - ${E.name}.jpg`;document.body.append(a);a.click();a.remove();msg.textContent='حُفظت صورة التقرير.'}},'حفظ الصورة'):null;
+  app.replaceChildren(h('div',{class:'stack'},masthead(true),h('div',{class:'l-head'},h('h1',{},EXAM_TITLE)),
+    h('section',{class:'card send stack'},h('div',{class:'scorebox'},h('div',{class:'big num'},ar(fmt1(P.score)),h('span',{style:'font-size:20px;color:var(--muted)'},' / '+ar(P.total))),h('div',{class:'stack',style:'gap:4px;min-width:0'},h('h2',{style:'font-size:22px'},P.dup?'✓ سبق أن سلّمت هذا الاختبار':'✓ وصل اختبارك إلى المعلم'),h('p',{class:'note'},`${d.toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'})} ${d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})}`))),
+      h('p',{},'يُقبل تسليم واحد فقط لهذا الاختبار.'),E?h('h3',{style:'font-size:19px'},'تقرير اختبارك'):null,E?img:null,sv?h('div',{class:'row'},sv):null,msg)))}
+
+/* قسم الاختبار النهائي في صفحة المعلم */
+function examBuilder(base){const sel=new Set();let total=20;const out=h('div',{class:'stack',style:'gap:8px'});
+  async function copy(t,btn){try{await navigator.clipboard.writeText(t);btn.textContent='نُسخ'}catch(e){btn.textContent='انسخه يدويًا'}setTimeout(()=>btn.textContent='انسخ رابط الاختبار',1500)}
+  function drawOut(){const ids=ORDER.filter(id=>sel.has(id));if(!ids.length){out.replaceChildren(h('p',{class:'note'},'حدّد مهام الاختبار من القائمة ليظهر رابطه هنا.'));return}
+    const l=(base||'(رابط موقعك)')+'?exam='+ids.join(',')+'&total='+total;const b=h('button',{type:'button',class:'btn',onclick:()=>copy(l,b)},'انسخ رابط الاختبار');
+    out.replaceChildren(h('b',{},`${ar(ids.length)} مهام · الدرجة الكلية ${ar(total)} · لكل مهمة ${ar(fmt1(total/ids.length))} درجات`),h('pre',{class:'preview',dir:'ltr'},l),h('div',{class:'row'},b,base?h('a',{class:'btn ghost',href:l,target:'_blank',rel:'noopener'},'جرّب الاختبار'):null))}
+  const tot=h('input',{type:'number',id:'ex-total',min:1,max:100,value:total,style:'max-width:110px;text-align:center;font-size:18px;font-weight:700',oninput:e=>{const v=parseInt(toEnDigits(e.target.value),10);if(v>=1&&v<=100){total=v;drawOut()}}});
+  const list=h('div',{class:'stack',style:'gap:14px'},TERMS.map(T=>h('div',{class:'stack',style:'gap:6px'},h('h3',{style:'font-size:18px'},T.title),T.units.map(U=>h('div',{class:'stack',style:'gap:4px'},h('div',{class:'unit-n'},U.title),U.lessons.map(L=>h('label',{class:'toggle'},h('input',{type:'checkbox',id:'ex-'+L.id,onchange:e=>{e.target.checked?sel.add(L.id):sel.delete(L.id);drawOut()}}),h('span',{},`${L.label}: ${L.title}`))))))));
+  drawOut();
+  return h('section',{class:'card stack exam-builder'},h('h2',{style:'font-size:20px'},'٢. الاختبار النهائي (مهام عملية فقط)'),
+    h('p',{},'اختر الدروس التي تريد مهامها العملية في الاختبار، وحدّد الدرجة الكلية. تُقسم الدرجة بالتساوي على المهام، وتُحفظ التقارير في مجلد «الاختبار النهائي».'),
+    h('div',{class:'row'},h('label',{for:'ex-total',style:'font-weight:700'},'الدرجة الكلية للاختبار:'),tot),h('div',{class:'send card'},out),h('details',{},h('summary',{style:'cursor:pointer;font-weight:700'},'اختيار مهام الاختبار'),h('div',{style:'margin-top:10px'},list)))}
+
+function route(){const id=location.hash.slice(1);if(isTeacher())renderTeacher();else if(EXAM_IDS.length)renderExam();else if(ASSIGNED.length){if(ASSIGNED.length===1)renderLesson(LESSONS[ASSIGNED[0]]);else if(ASSIGNED.includes(id))renderLesson(LESSONS[id]);else renderAssigned()}else if(REQUIRE_LINK)renderNeedLink();else if(LESSONS[id])renderLesson(LESSONS[id]);else renderHome();window.scrollTo(0,0)}
 addEventListener('hashchange',route);route();
 /* جلب قائمة الفصول من جدول المعلم ثم تحديث القوائم المفتوحة دون مسح ما كتبه الطالب */
 (async()=>{if(!SHEET_URL){CLASSES_LOADING=false;return}try{const r=await fetch(SHEET_URL+'?action=classes');const j=await r.json();if(j&&Array.isArray(j.classes)&&j.classes.length){CLASSES=j.classes.map(String);
